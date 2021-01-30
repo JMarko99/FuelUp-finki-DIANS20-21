@@ -1,4 +1,4 @@
-let latitude = 41.6086, longitude = 21.7453, marker = [], theMarker = {};
+let latitude = -1, longitude = -1, marker = [], theMarker = [];
 
 class FuelsStation {
     getFuels(button) {
@@ -6,7 +6,12 @@ class FuelsStation {
         if (button === 'btn4' || button === 'enterName') {
             input = $('#enterName').val();
             flag = false;
-            input = input[0].toUpperCase() + input.slice(1);
+            if (input.length < 1){
+                alert('Put fuels station name!');
+            }
+            else {
+                input = input[0].toUpperCase() + input.slice(1);
+            }
         }
         $.getJSON('benzinski.txt', function (data) {
             $.each(data.benzinski, function (i, fuel) {
@@ -58,34 +63,6 @@ class FuelsStation {
         });
     }
 }
-
-let clicked = 0, clicksOnMap = [];
-
-function onMapClick(e) {
-    if (clicked < 2) {
-        let LamMarker = L.marker().setLatLng(e.latlng).addTo(map).bindPopup("You clicked the map at " + e.latlng.toString()).openPopup();
-        marker.push(LamMarker);
-        clicksOnMap.push(e);
-        clicked++;
-        map.setView([e.latlng.lat, e.latlng.lng], 11);
-    } else {
-        clicked++;
-        console.log('Merge Request !');
-        let latlngs = Array();
-        latlngs.push(clicksOnMap[0].latlng);
-        latlngs.push(clicksOnMap[1].latlng);
-        let rectOptions = {color: 'Red', weight: 1}
-        let polyline = L.polyline(latlngs, rectOptions);
-        polyline.addTo(map);
-        map.fitBounds(polyline.getBounds());
-        if (clicked < 5){
-            deleteLayers();
-            map.removeLayer(polyline);
-            clicked = 0;
-        }
-    }
-}
-
 
 function deleteLayers() {                                                                                               //Gi brise prethodno postavenite markeri na mapata od
     for (let i = 0; i < marker.length; i++) {                                                                           //druga funkcija
@@ -145,14 +122,16 @@ function PutMarker(fuelLatitude, fuelLongitude, name, diesel, lpg, open) {      
     marker.push(LamMarker);
 }
 
-function getYourLocation() {                                                                                            // So ova funkcija se pronaogja momentalnata lokacija
-    if (navigator.geolocation) {                                                                                        // na korisnikot.
-        navigator.geolocation.getCurrentPosition(function (position) {
-            latitude = position.coords.latitude;
-            longitude = position.coords.longitude;
-        })
-    } else {
-        alert("Geolocation is not supported by this browser.");
+function getYourLocation() {                                                                                            // So ova funkcija se pronaogja momentalnata lokacija na korisnikot.
+    navigator.geolocation.getCurrentPosition(getLocation, unknownLocation);
+    function getLocation(pos)
+    {
+        latitude = pos.coords.latitude;
+        longitude = pos.coords.longitude;
+    }
+    function unknownLocation()
+    {
+        alert('Could not find location');
     }
 }
 
